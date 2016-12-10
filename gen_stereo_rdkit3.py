@@ -181,10 +181,11 @@ def main():
                         help='generate stereoisomers for unspecified tetrahedral centers.')
     parser.add_argument('-d', '--double_bond', required=False, action='store_true', default=False,
                         help='generate stereoisomers for unspecified double bonds.')
-    parser.add_argument('-u', '--max_undef', metavar='INTEGER', default=4,
-                        help='maximum number of unspecified stereocenters and/or double bonds. '
-                             'If compound contains more it will be discarded. If specify -1 all possible stereoisomers '
-                             'will be generated (beware of combinatorial explosion). Default: 4.')
+    parser.add_argument('-u', '--max_undef', metavar='INTEGER', default=-1,
+                        help='maximum allowed number of unspecified stereocenters and/or double bonds. '
+                             'if compound contains greater number of them it will be discarded. '
+                             'Default: all possible stereoisomers will be enumerated '
+                             '(beware of combinatorial explosion).')
     parser.add_argument('-f', '--id_field_name', metavar='field_name', default=None,
                         help='SDF input: field name of compound ID. '
                              'If omitted molecule titles will be used or SMILES string as name.')
