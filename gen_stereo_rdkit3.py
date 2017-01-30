@@ -61,19 +61,29 @@ def set_double_bond_stereo(bond, value):
     a1_bonds = tuple(b for b in a1.GetBonds() if b.GetIdx() != bond.GetIdx())
     a2_bonds = tuple(b for b in a2.GetBonds() if b.GetIdx() != bond.GetIdx())
 
-    if all(b.GetBondDir() == Chem.BondDir.NONE for b in a1_bonds) and \
-       all(b.GetBondDir() == Chem.BondDir.NONE for b in a2_bonds):
+    # print('----')
+    # print(a1.GetIdx())
+    # for b in a1_bonds:
+    #     print(b.GetBondDir())
+    # print(a2.GetIdx())
+    # for b in a2_bonds:
+    #     print(b.GetBondDir())
 
-        a1_bonds[0].SetBondDir(Chem.rdchem.BondDir.ENDDOWNRIGHT)
-        if value:
-            a2_bonds[0].SetBondDir(Chem.rdchem.BondDir.ENDDOWNRIGHT)
+    if a1_bonds and a2_bonds:   # if double bond of carbonyl one atom does not have any other bonds - skip
+
+        if all(b.GetBondDir() == Chem.BondDir.NONE for b in a1_bonds) and \
+           all(b.GetBondDir() == Chem.BondDir.NONE for b in a2_bonds):
+
+            a1_bonds[0].SetBondDir(Chem.rdchem.BondDir.ENDDOWNRIGHT)
+            if value:
+                a2_bonds[0].SetBondDir(Chem.rdchem.BondDir.ENDDOWNRIGHT)
+            else:
+                a2_bonds[0].SetBondDir(Chem.rdchem.BondDir.ENDUPRIGHT)
+
+        elif all(b.GetBondDir() == Chem.BondDir.NONE for b in a1_bonds):
+            set_bond(a2_bonds, a1_bonds, value)
         else:
-            a2_bonds[0].SetBondDir(Chem.rdchem.BondDir.ENDUPRIGHT)
-
-    elif all(b.GetBondDir() == Chem.BondDir.NONE for b in a1_bonds):
-        set_bond(a2_bonds, a1_bonds, value)
-    else:
-        set_bond(a1_bonds, a2_bonds, value)
+            set_bond(a1_bonds, a2_bonds, value)
 
 
 def enumerate_double_bond_stereo(mol):
@@ -116,6 +126,13 @@ def enumerate_tetrahedral_stereo(mol):
 
 def enumerate_stereo(mol, mol_name, tetrahedral, double_bond, max_undef):
 
+    # print("Mol name:", mol_name)
+    #
+    # for a in mol.GetAtoms():
+    #     print(a.GetIdx(), a.GetSymbol())
+    # for b in mol.GetBonds():
+    #     print(b.GetIdx(), b.GetBondType(), b.GetBeginAtom(), b.GetEndAtom())
+
     if max_undef != -1:
         undef = 0
         if tetrahedral:
@@ -154,7 +171,8 @@ def main_params(in_fname, out_fname, tetrahedral, double_bond, max_undef, id_fie
 
     try:
         for res in p.imap_unordered(map_enumerate_stereo,
-                                    prep_input(in_fname, id_field_name, tetrahedral, double_bond, max_undef), chunksize=10):
+                                    prep_input(in_fname, id_field_name, tetrahedral, double_bond, max_undef),
+                                    chunksize=10):
             if out_fname is None:
                 for smi, mol_name in res:
                     print(smi + '\t' + mol_name)
